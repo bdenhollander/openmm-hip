@@ -79,7 +79,7 @@ IF(NOT EXECUTABLE_OUTPUT_PATH)
 ENDIF(NOT EXECUTABLE_OUTPUT_PATH)
 
 # Include OpenMM utiliity libraries
-SET(OPENMM_LIB_SUBDIRS libraries/jama libraries/quern libraries/hilbert libraries/csha1 libraries/lbfgs libraries/pocketfft)
+SET(OPENMM_LIB_SUBDIRS libraries/jama libraries/quern libraries/hilbert libraries/csha1 libraries/lbfgs libraries/pocketfft libraries/pthreads)
 FOREACH(subdir ${OPENMM_LIB_SUBDIRS})
     INCLUDE_DIRECTORIES(BEFORE ${OPENMM_SOURCE_DIR}/${subdir}/include)
 ENDFOREACH(subdir)
@@ -88,6 +88,7 @@ LIST(APPEND CMAKE_PREFIX_PATH $ENV{ROCM_PATH} /opt/rocm)
 
 FIND_PACKAGE(HIP CONFIG REQUIRED)
 FIND_PACKAGE(HIPFFT CONFIG REQUIRED)
+FIND_PACKAGE(HIPRTC CONFIG REQUIRED)
 
 IF(${HIP_COMPILER} STREQUAL "clang")
     MESSAGE(STATUS "Using HIP-Clang compiler")

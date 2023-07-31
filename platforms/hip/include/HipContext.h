@@ -44,7 +44,6 @@
 #include <utility>
 #define __CL_ENABLE_EXCEPTIONS
 #ifdef _MSC_VER
-    #error "Windows unsupported for HIP platform"
     // Prevent Windows from defining macros that interfere with other code.
     #define NOMINMAX
 #endif

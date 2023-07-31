@@ -27,8 +27,9 @@
  * -------------------------------------------------------------------------- */
 
 #ifdef WIN32
-  #error "Windows unsupported for HIP platform"
-#endif
+#define _SILENCE_EXPERIMENTAL_FILESYSTEM_DEPRECATION_WARNING
+#include <experimental/filesystem>
+#endif // WIN32
 #include <cmath>
 #include "HipContext.h"
 #include "HipArray.h"
@@ -60,7 +61,9 @@
 #include <stack>
 #include <typeinfo>
 #include <sys/stat.h>
+#ifndef WIN32
 #include <unistd.h>
+#endif // WIN32
 
 
 #define CHECK_RESULT(result) CHECK_RESULT2(result, errorMessage);
@@ -86,7 +89,11 @@ HipContext::HipContext(const System& system, int deviceIndex, bool useBlockingSy
         useBlockingSync(useBlockingSync), fftBackend(0), supportsHardwareFloatGlobalAtomicAdd(false) {
     // Determine what compiler to use.
 
+#ifdef WIN32
+    this->compiler = compiler;
+#else
     this->compiler = "\""+compiler+"\"";
+#endif // WIN32
     if (allowRuntimeCompiler && platformData.context != NULL) {
         try {
             compilerKernel = platformData.context->getPlatform().createKernel(HipCompilerKernel::Name(), *platformData.context);
@@ -96,7 +103,11 @@ HipContext::HipContext(const System& system, int deviceIndex, bool useBlockingSy
             // The runtime compiler plugin isn't available.
         }
     }
+#ifdef WIN32
+    string testCompilerCommand = this->compiler+" --version > NUL";
+#else
     string testCompilerCommand = this->compiler+" --version > /dev/null 2> /dev/null";
+#endif // WIN32
     int res = std::system(testCompilerCommand.c_str());
     struct stat info;
     isHipccAvailable = (res == 0 && stat(tempDir.c_str(), &info) == 0);
@@ -348,7 +359,12 @@ HipContext::HipContext(const System& system, int deviceIndex, bool useBlockingSy
     if (fftBackendVariable != NULL)
         stringstream(fftBackendVariable) >> fftBackend;
     else
+#ifdef WIN32
+        fftBackend = 0; // Use bundled by default
+#else
         fftBackend = 2; // Use VkFFT by default
+#endif // WIN32
+
 
     // Create utilities objects.
 
@@ -468,9 +484,14 @@ void HipContext::popAsCurrent() {
 
 string HipContext::getTempFileName() const {
     stringstream tempFileName;
+#ifdef WIN32
+    char name[L_tmpnam];
+    tempFileName << std::tmpnam(name);
+#else
     tempFileName << tempDir;
     tempFileName << "openmmTempKernel" << this; // Include a pointer to this context as part of the filename to avoid collisions.
     tempFileName << "_" << getpid();
+#endif // WIN32
     return tempFileName.str();
 }
 
@@ -490,6 +511,10 @@ string HipContext::getHash(const string& src) const {
 string HipContext::getCacheFileName(const string& src) const {
     stringstream cacheFile;
     cacheFile << cacheDir << getHash(src) << '_' << gpuArchitecture;
+#ifdef WIN32
+    cacheFile << ".hip-cache";
+#endif // WIN32
+
     return cacheFile.str();
 }
 
@@ -630,7 +655,11 @@ hipModule_t HipContext::createModule(const string source, const map<string, stri
         ofstream out(inputFile.c_str());
         out << src.str();
         out.close();
-        string command = compiler + " --genco --offload-arch=" + gpuArchitecture + " " + options + (saveTemps ? " -save-temps=obj" : "") +" -o \""+outputFile+"\" " + " \""+inputFile+"\" 2> \""+logFile+"\"";
+        string extraArgs = "";
+#ifdef WIN32
+        extraArgs += "-v --rocm-device-lib-path=\\\"" + std::string(getenv("HIP_PATH")) + "amdgcn\\bitcode\\\" ";
+#endif // WIN32
+        string command = compiler + " --genco --offload-arch=" + gpuArchitecture + " " + extraArgs + options + (saveTemps ? " -save-temps=obj" : "") +" -o \""+outputFile+"\" " + " \""+inputFile+"\" > \""+logFile+"\"";
         res = std::system(command.c_str());
     }
     try {
@@ -660,8 +689,14 @@ hipModule_t HipContext::createModule(const string source, const map<string, stri
             remove(inputFile.c_str());
             remove(logFile.c_str());
         }
+#ifdef WIN32
+        std::experimental::filesystem::copy(outputFile, cacheFile);
+        if (!saveTemps)
+            remove(outputFile.c_str());
+#else
         if (rename(outputFile.c_str(), cacheFile.c_str()) != 0 && !saveTemps)
             remove(outputFile.c_str());
+#endif // WIN32
         loadedModules.push_back(module);
         return module;
     }

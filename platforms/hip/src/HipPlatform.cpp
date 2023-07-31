@@ -40,7 +40,6 @@
 #include <sstream>
 #include <cstdio>
 #ifdef _MSC_VER
-    #error "Windows unsupported for HIP platform"
 #endif
 using namespace OpenMM;
 using namespace std;
@@ -128,12 +127,20 @@ HipPlatform::HipPlatform() {
     setPropertyDefaultValue(HipDeterministicForces(), "false");
     string hipcc;
     char* compiler = getenv("OPENMM_HIP_COMPILER");
+#ifdef WIN32
+    char* rocmPath = getenv("HIP_PATH");
+#else
     char* rocmPath = getenv("ROCM_PATH");
+#endif
     if (compiler != NULL) {
         hipcc = compiler;
     }
     else if (rocmPath != NULL) {
+#ifdef WIN32
+        hipcc = string(rocmPath) + "/bin/hipcc.bin.exe";
+#else
         hipcc = string(rocmPath) + "/bin/hipcc";
+#endif // WIN32
     }
     else {
         hipcc = "/opt/rocm/bin/hipcc";
@@ -146,8 +153,12 @@ HipPlatform::HipPlatform() {
     char* useHipRtcEnv = getenv("OPENMM_USE_HIPRTC");
     bool allowRuntimeCompiler = (useHipRtcEnv != NULL && string(useHipRtcEnv) == "1");
     setPropertyDefaultValue(HipAllowRuntimeCompiler(), allowRuntimeCompiler ? "true" : "false");
+#ifdef WIN32
+    string tmp(getenv("TMP"));
+#else
     char* tmpdir = getenv("TMPDIR");
     string tmp = (tmpdir == NULL ? string(P_tmpdir) : string(tmpdir));
+#endif
     setPropertyDefaultValue(HipTempDirectory(), tmp);
     char* hostCompiler = getenv("HIP_HOST_COMPILER");
     setPropertyDefaultValue(HipHostCompiler(), (hostCompiler == NULL ? "" : string(hostCompiler)));
