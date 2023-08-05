@@ -31,6 +31,13 @@ The plugin requires source code of OpenMM, it can be downloaded as an archive
 git clone https://github.com/openmm/openmm.git -b 8.0.0
 ```
 
+Clone this repository or download the source code as an archive
+[here](https://github.com/bdenhollander/openmm-hip/archive/refs/heads/windows-compatibility.zip)
+
+```sh
+git clone https://github.com/bdenhollander/openmm-hip.git -b windows-compatibility
+```
+
 To build the plugin, follow these steps:
 
 1. Create a directory in which to build the plugin.
@@ -59,6 +66,8 @@ level directory of this project as the source directory.
 
 12. Switch to Release mode and build `OpenMMHip` and `OpenMMHipCompiler`. Make note of the directories the files were written to.
 
+13. If `pthread.lib` is the only file not found during linking, install it into Miniconda `conda install -c conda-forge pthreads-win32`.
+
 ## Adding HIP to OpenMM
 
 1. Create a directory to use for compiled HIP kernels. Add an Environment variable named `OPENMM_CACHE_DIR` and set the value
@@ -66,7 +75,7 @@ to be the file path to that directory.
 
 2. Open the directory that contains the Miniconda environment and browse to `Library\lib\plugins`
 
-3. Copy the following files from `C:\AMD\ROCm\5.5\bin` to the directory above
+3. Copy the following files from `C:\AMD\ROCm\5.5\bin` to `Library\lib\plugins`
    - `hipfft.dll`
    - `hiprtc0505.dll`
    - `rocfft.dll`
