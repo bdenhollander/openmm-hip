@@ -131,8 +131,8 @@ HipContext::HipContext(const System& system, int deviceIndex, bool useBlockingSy
         throw OpenMMException("Illegal value for Precision: "+precision);
     char* cacheVariable = getenv("OPENMM_CACHE_DIR");
     cacheDir = (cacheVariable == NULL ? tempDir : string(cacheVariable));
-    this->tempDir = tempDir+"\\";
-    cacheDir = cacheDir+"\\";
+    this->tempDir = tempDir+"/";
+    cacheDir = cacheDir+"/";
     contextIndex = platformData.contexts.size();
     string errorMessage = "Error initializing Context";
     if (originalContext == NULL) {
@@ -505,10 +505,12 @@ string HipContext::getHash(const string& src) const {
 
 string HipContext::getCacheFileName(const string& src) const {
     stringstream cacheFile;
-    cacheFile << cacheDir << getHash(src) << '_' << gpuArchitecture;
-//#ifdef WIN32
+    std::string architecture(gpuArchitecture);
+    std::replace(architecture.begin(), architecture.end(), ':', '_');
+    cacheFile << cacheDir << getHash(src) << '_' << architecture;
+#ifdef WIN32
     cacheFile << ".hip-cache";
-//#endif // WIN32
+#endif // WIN32
 
     return cacheFile.str();
 }
