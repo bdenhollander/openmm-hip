@@ -627,7 +627,7 @@ hipModule_t HipContext::createModule(const string source, const map<string, stri
 
         bool wroteCache = false;
         try {
-            ofstream out(outputFile.c_str());
+            ofstream out(outputFile.c_str(), ios::out | ios::binary);
             out.write(&ptx[0], ptx.size());
             out.close();
             if (!out.fail())
