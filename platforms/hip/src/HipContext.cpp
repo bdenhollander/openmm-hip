@@ -685,9 +685,14 @@ hipModule_t HipContext::createModule(const string source, const map<string, stri
             remove(logFile.c_str());
         }
 #ifdef WIN32
-        std::experimental::filesystem::copy(outputFile, cacheFile);
-        if (!saveTemps)
+        error_code error;
+        std::experimental::filesystem::copy(outputFile, cacheFile, error);
+        if (!saveTemps) {
             remove(outputFile.c_str());
+        }
+        if (error) {
+            std::cout << "Error copying cache file from: " << outputFile << " to: " << cacheFile << " Error Code: " << error << std::endl;
+        }
 #else
         if (rename(outputFile.c_str(), cacheFile.c_str()) != 0 && !saveTemps)
             remove(outputFile.c_str());
