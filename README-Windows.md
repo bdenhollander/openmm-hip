@@ -76,6 +76,7 @@ to be the file path to that directory.
 2. Open the directory that contains the Miniconda environment and browse to `Library\lib\plugins`
 
 3. Copy the following files from `C:\AMD\ROCm\5.5\bin` to `Library\lib\plugins`
+   - `amd_comgr0505.dll`
    - `hipfft.dll`
    - `hiprtc0505.dll`
    - `rocfft.dll`
