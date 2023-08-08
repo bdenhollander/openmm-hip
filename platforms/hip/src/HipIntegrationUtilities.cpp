@@ -44,7 +44,11 @@ using namespace std;
 HipIntegrationUtilities::HipIntegrationUtilities(HipContext& context, const System& system) : IntegrationUtilities(context, system),
         ccmaConvergedMemory(NULL) {
         CHECK_RESULT2(hipEventCreateWithFlags(&ccmaEvent, context.getEventFlags()), "Error creating event for CCMA");
+#ifdef WIN32
         CHECK_RESULT2(hipHostMalloc((void**) &ccmaConvergedMemory, sizeof(int), hipHostMallocDefault), "Error allocating pinned memory");
+#else
+        CHECK_RESULT2(hipHostMalloc((void**) &ccmaConvergedMemory, sizeof(int), hipHostMallocNumaUser), "Error allocating pinned memory");
+#endif // WIN32
         CHECK_RESULT2(hipHostGetDevicePointer(&ccmaConvergedDeviceMemory, ccmaConvergedMemory, 0), "Error getting device address for pinned memory");
 }
 
