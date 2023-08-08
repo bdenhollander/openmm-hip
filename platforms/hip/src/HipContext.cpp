@@ -406,19 +406,19 @@ void HipContext::initialize() {
         energyBuffer.initialize<double>(*this, numEnergyBuffers, "energyBuffer");
         energySum.initialize<double>(*this, multiprocessors, "energySum");
         int pinnedBufferSize = max(paddedNumAtoms*4, numEnergyBuffers);
-        CHECK_RESULT(hipHostMalloc(&pinnedBuffer, pinnedBufferSize*sizeof(double), hipHostMallocNumaUser));
+        CHECK_RESULT(hipHostMalloc(&pinnedBuffer, pinnedBufferSize*sizeof(double), hipHostMallocDefault));
     }
     else if (useMixedPrecision) {
         energyBuffer.initialize<double>(*this, numEnergyBuffers, "energyBuffer");
         energySum.initialize<double>(*this, multiprocessors, "energySum");
         int pinnedBufferSize = max(paddedNumAtoms*4, numEnergyBuffers);
-        CHECK_RESULT(hipHostMalloc(&pinnedBuffer, pinnedBufferSize*sizeof(double), hipHostMallocNumaUser));
+        CHECK_RESULT(hipHostMalloc(&pinnedBuffer, pinnedBufferSize*sizeof(double), hipHostMallocDefault));
     }
     else {
         energyBuffer.initialize<float>(*this, numEnergyBuffers, "energyBuffer");
         energySum.initialize<float>(*this, multiprocessors, "energySum");
         int pinnedBufferSize = max(paddedNumAtoms*6, numEnergyBuffers);
-        CHECK_RESULT(hipHostMalloc(&pinnedBuffer, pinnedBufferSize*sizeof(float), hipHostMallocNumaUser));
+        CHECK_RESULT(hipHostMalloc(&pinnedBuffer, pinnedBufferSize*sizeof(float), hipHostMallocDefault));
     }
     for (int i = 0; i < numAtoms; i++) {
         double mass = system.getParticleMass(i);
