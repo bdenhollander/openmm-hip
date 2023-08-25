@@ -22,6 +22,8 @@ The options for Ray Tracing and Radeon Pro drivers can be unchecked.
 
 ## Building OpenMM-HIP
 
+### Checkout Source Code
+
 This project uses [CMake](http://www.cmake.org) for its build system.
 
 The plugin requires source code of OpenMM, it can be downloaded as an archive
@@ -37,6 +39,34 @@ Clone this repository or download the source code as an archive
 ```sh
 git clone https://github.com/bdenhollander/openmm-hip.git -b windows-compatibility
 ```
+
+### Patch Amoeba
+
+A [compiler bug](https://github.com/openmm/openmm/issues/4194) in the initial Windows HIP SDK requires a patch
+to kernel code in OpenMM. A fix should be included in the next SDK release but for now a small change will workaround the problem.
+
+In the main OpenMM repo checked out first, open `openmm\plugins\amoeba\platforms\common\src\kernels\multipoleInducedField.cc` in a text editor.  Find this snippet of code around line 765:
+
+```C++
+for (k = 0; k < rank; k++) {
+   real t = b[p][k];
+   b[p][k] = b[j][k];
+   b[j][k] = t;
+}
+```
+
+Add `#pragma unroll 1` before the for loop and save the file.
+
+```C++
+#pragma unroll 1
+for (k = 0; k < rank; k++) {
+   real t = b[p][k];
+   b[p][k] = b[j][k];
+   b[j][k] = t;
+}
+```
+
+### Build the Plugin
 
 To build the plugin, follow these steps:
 
@@ -84,6 +114,8 @@ to be the file path to that directory.
 4. Copy the following files from Visual Studio build folders to `Library\lib\plugins`
    - `platforms\hip\Release\OpenMMHIP.dll`
    - `platforms\hip\Release\OpenMMHIP.lib`
+   - `plugins\amoeba\platforms\hip\Release\OpenMMAmoebaHIP.dll`
+   - `plugins\amoeba\platforms\hip\Release\OpenMMAmoebaHIP.lib`
    - `plugins\hipcompiler\Release\OpenMMHipCompiler.dll`
    - `plugins\hipcompiler\Release\OpenMMHipCompiler.lib`
 
@@ -106,9 +138,11 @@ Launch Miniconda and switch to the directory where the Conda environment is loca
 Run benchmarks (see more options `python benchmark.py --help`):
 
 ```sh
-python benchmark.py --platform=OpenCL --style=table --test=gbsa,rf,pme,apoa1rf,apoa1pme,apoa1ljpme
+python benchmark.py --platform=OpenCL --style=table --test=gbsa,rf,pme,apoa1rf,apoa1pme,apoa1ljpme,amoebagk,amoebapme --seconds 30
 ```
 
 ```sh
-python benchmark.py --platform=HIP --style=table --test=gbsa,rf,pme,apoa1rf,apoa1pme,apoa1ljpme
+python benchmark.py --platform=HIP --style=table --test=gbsa,rf,pme,apoa1rf,apoa1pme,apoa1ljpme,amoebagk,amoebapme --seconds 30
 ```
+
+For systems with multiple GPUs, add `--device #` to specify with GPU to test, replace `#` with `0`, `1`, etc.
