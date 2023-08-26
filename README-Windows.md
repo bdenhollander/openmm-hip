@@ -44,6 +44,7 @@ git clone https://github.com/bdenhollander/openmm-hip.git -b windows-compatibili
 
 A [compiler bug](https://github.com/openmm/openmm/issues/4194) in the initial Windows HIP SDK requires a patch
 to kernel code in OpenMM. A fix should be included in the next SDK release but for now a small change will workaround the problem.
+(LLVM compiler fixes: [D152502](https://reviews.llvm.org/D152502), [D153838](https://reviews.llvm.org/D153838).)
 
 In the main OpenMM repo checked out first, open `openmm\plugins\amoeba\platforms\common\src\kernels\multipoleInducedField.cc` in a text editor.  Find this snippet of code around line 765:
 
@@ -145,4 +146,11 @@ python benchmark.py --platform=OpenCL --style=table --test=gbsa,rf,pme,apoa1rf,a
 python benchmark.py --platform=HIP --style=table --test=gbsa,rf,pme,apoa1rf,apoa1pme,apoa1ljpme,amoebagk,amoebapme --seconds 30
 ```
 
-For systems with multiple GPUs, add `--device #` to specify with GPU to test, replace `#` with `0`, `1`, etc.
+For systems with multiple GPUs, add `--device #` to specify which GPU to test, replacing `#` with `0`, `1`, etc.
+
+## Test Runtime Compiler
+
+1. Add an Environment variable named `OPENMM_USE_HIPRTC` and set the value to `1`.
+2. Delete the contents of directory set as location for the Environment variable `OPENMM_CACHE_DIR`. Alternatively, rename the directory create a new directory with the same name.
+3. Run HIP benchmarks. Performance should be relatively unchanged compared to using `hipcc.bin.exe`. Cached files should appear in `OPENMM_CACHE_DIR`.
+4. Run HIP benchmarks a second time to confirm tests start faster, indicating cached files are being used. 
