@@ -750,6 +750,9 @@ void HipCalcNonbondedForceKernel::initialize(const System& system, const Nonbond
                     ewaldSelfEnergy += baseParticleParamVec[i].z*pow(baseParticleParamVec[i].y*dispersionAlpha, 6)/3.0;
             }
             usePmeStream = (!cu.getPlatformData().disablePmeStream && !cu.getPlatformData().useCpuPme);
+#ifdef WIN32
+            usePmeStream &= cu.getNumAtoms() > 40000;
+#endif
             map<string, string> pmeDefines;
             pmeDefines["PME_ORDER"] = cu.intToString(PmeOrder);
             pmeDefines["NUM_ATOMS"] = cu.intToString(numParticles);
