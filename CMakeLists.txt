@@ -79,7 +79,7 @@ IF(NOT EXECUTABLE_OUTPUT_PATH)
 ENDIF(NOT EXECUTABLE_OUTPUT_PATH)
 
 # Include OpenMM utiliity libraries
-SET(OPENMM_LIB_SUBDIRS libraries/jama libraries/quern libraries/hilbert libraries/csha1 libraries/lbfgs libraries/pocketfft)
+SET(OPENMM_LIB_SUBDIRS libraries/jama libraries/quern libraries/hilbert libraries/csha1 libraries/lbfgs libraries/pocketfft libraries/vkfft)
 FOREACH(subdir ${OPENMM_LIB_SUBDIRS})
     INCLUDE_DIRECTORIES(BEFORE ${OPENMM_SOURCE_DIR}/${subdir}/include)
 ENDFOREACH(subdir)
