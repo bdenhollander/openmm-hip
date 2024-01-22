@@ -10,7 +10,7 @@ to install OpenMM in Miniconda.
 
 ## Install AMD HIP SDK
 
-Download the [HIP SDK for Windows](https://www.amd.com/en/developer/rocm-hub/hip-sdk.html). During the installation, change
+Download the [HIP SDK for Windows](https://www.amd.com/en/developer/resources/rocm-hub/hip-sdk.html). During the installation, change
 the installation directory to be within `C:\AMD` instead of `C:\Program Files\AMD` so the file path does not contain spaces.
 
 The options for Ray Tracing and Radeon Pro drivers can be unchecked.
@@ -42,8 +42,8 @@ git clone https://github.com/bdenhollander/openmm-hip.git -b windows-compatibili
 
 ### Patch Amoeba
 
-A [compiler bug](https://github.com/openmm/openmm/issues/4194) in the initial Windows HIP SDK requires a patch
-to kernel code in OpenMM. A fix should be included in the next SDK release but for now a small change will workaround the problem.
+A [compiler bug](https://github.com/openmm/openmm/issues/4194) in the 5.5.1 and 5.7.1 Windows HIP SDK releases requires a patch
+to kernel code in OpenMM. A fix should be included in the 6.0.x SDK release but for now a small change will work around the problem.
 (LLVM compiler fixes: [D152502](https://reviews.llvm.org/D152502), [D153838](https://reviews.llvm.org/D153838).)
 
 In the main OpenMM repo checked out first, open `openmm\plugins\amoeba\platforms\common\src\kernels\multipoleInducedField.cc` in a text editor.  Find this snippet of code around line 765:
@@ -149,6 +149,8 @@ python benchmark.py --platform=HIP --style=table --test=gbsa,rf,pme,apoa1rf,apoa
 For systems with multiple GPUs, add `--device #` to specify which GPU to test, replacing `#` with `0`, `1`, etc.
 
 ## Test Runtime Compiler
+
+(Works in 5.5.1 but is broken in 5.7.1.)
 
 1. Add an Environment variable named `OPENMM_USE_HIPRTC` and set the value to `1`.
 2. Delete the contents of directory set as location for the Environment variable `OPENMM_CACHE_DIR`. Alternatively, rename the directory create a new directory with the same name.
